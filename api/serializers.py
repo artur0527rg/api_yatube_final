@@ -1,6 +1,9 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 
-from .models import Post, Comment
+User = get_user_model()
+
+from .models import Post, Comment, Follow
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -18,3 +21,27 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ('id', 'author', 'post', 'text', 'created')
         model = Comment
         read_only_fields = ('post',)
+
+class FollowSerizalizer(serializers.ModelSerializer):
+    user = serializers.SlugRelatedField(slug_field="username",
+        # queryset=User.objects.all(),
+        read_only=True
+        )
+    following = serializers.SlugRelatedField(
+        slug_field = 'username',
+        queryset=User.objects.all()
+        )
+
+    def validate(self, attrs):
+        if self.context['request'].user == attrs['following']:
+            raise serializers.ValidationError('Вы не можете подписаться сами на себя', code=400)
+        if Follow.objects.filter(
+            user = self.context['request'].user,
+            following = attrs['following']
+            ).exists():
+            raise serializers.ValidationError('Вы не можете подписатся на пользователся два раза')
+        return attrs
+
+    class Meta():
+        model = Follow
+        fields = ("user","following")
