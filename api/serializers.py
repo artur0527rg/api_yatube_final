@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-from .models import Post, Comment, Follow
+from .models import Post, Comment, Follow, Group
 
 
 class PostSerializer(serializers.ModelSerializer):
@@ -45,3 +45,9 @@ class FollowSerizalizer(serializers.ModelSerializer):
     class Meta():
         model = Follow
         fields = ("user","following")
+
+class GroupSerializer(serializers.ModelSerializer):
+
+    class Meta():
+        model = Group
+        fields = ('id', 'title')
